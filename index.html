@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<style>
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=7nuwLjgP50OC37LJ4Rfhs88dZJ2kZ4Gpgn6cLnTCufbd3D5SeFRCOSXJeiB0FtHxFxV1e24CNDeYPxH7GB-_EiS-foL4A_ueFJhXoIKz1XxTE-6s5yt9fGq8yo2uSxlYOrNXj6vCswnpY5qSetkvNfJ6pjYQ1xRagHC__0_h1CzPVulm5Aly7r3tb-DXO4aVrcy4-rzivq0x3TbT99eVWG8tLJlZR-QA--xGasFekPo" charset="UTF-8"></script><style>
   @font-face { font-family:'Syne'; font-weight:400; font-display:swap; src:url(fonts/syne-400.woff2) format('woff2'); }
   @font-face { font-family:'Syne'; font-weight:600; font-display:swap; src:url(fonts/syne-600.woff2) format('woff2'); }
   @font-face { font-family:'Syne'; font-weight:700; font-display:swap; src:url(fonts/syne-700.woff2) format('woff2'); }
@@ -705,8 +705,8 @@
       <div class="info-line" id="bk-info">—</div>
       <button class="btn-primary" style="margin-top:14px;" onclick="exportData()">📤 Respaldar / Exportar</button>
       <div class="info-line" style="font-size:11px;color:var(--text-muted);">Se abre Compartir: elige <b>Drive</b> para guardarlo en la nube.</div>
-      <button class="btn-secondary" onclick="document.getElementById('import-file').click()">📥 Importar archivo .json</button>
-      <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="importFile(this)">
+      <button class="btn-secondary" onclick="document.getElementById('import-file').click()">📥 Importar respaldo (.json / .txt)</button>
+      <input type="file" id="import-file" accept=".json,.txt,application/json,text/plain" style="display:none" onchange="importFile(this)">
     </div>
 
     <div class="section-title">📱 Este dispositivo</div>
@@ -1463,8 +1463,9 @@ function buildBackup() {
 
 async function exportData() {
   const json = JSON.stringify(buildBackup(), null, 1);
-  const name = `misfinanzas-respaldo-${today()}.json`;
-  const file = new File([json], name, { type: 'application/json' });
+  // Chrome Android no permite compartir .json; se comparte como texto (.json.txt)
+  const name = `misfinanzas-respaldo-${today()}.json.txt`;
+  const file = new File([json], name, { type: 'text/plain' });
 
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
@@ -1475,6 +1476,8 @@ async function exportData() {
       if (e.name === 'AbortError') { toast('Respaldo cancelado'); return; }
       // Si falla compartir, se descarga
     }
+  } else {
+    toast('Este navegador no permite compartir: se descargará');
   }
   const url = URL.createObjectURL(file);
   const a = document.createElement('a');
