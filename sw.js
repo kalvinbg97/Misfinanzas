@@ -1,5 +1,5 @@
 // Cambia este número cada vez que subas una versión nueva
-const CACHE = 'misfinanzas-v1';
+const CACHE = 'misfinanzas-v3';
 const ASSETS = [
   './', './index.html', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
@@ -22,15 +22,24 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
 
-  // Página: primero red (para recibir actualizaciones), si no hay internet usa la copia
+  // Página: abre al instante la copia guardada y actualiza en segundo plano.
+  // Si no hay copia, usa la red con un límite de 6 s para no quedarse cargando.
   if (req.mode === 'navigate') {
-    e.respondWith(
-      fetch(req).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put('./index.html', copy));
+    e.respondWith(caches.open(CACHE).then(async cache => {
+      const cached = await cache.match('./index.html');
+      const network = fetch(req, { cache: 'no-store' }).then(res => {
+        if (res.ok) cache.put('./index.html', res.clone());
         return res;
-      }).catch(() => caches.match('./index.html'))
-    );
+      });
+      if (cached) {
+        e.waitUntil(network.catch(() => {}));
+        return cached;
+      }
+      const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 6000));
+      return Promise.race([network, timeout]).catch(() =>
+        new Response('<meta name="viewport" content="width=device-width"><body style="background:#0d0f14;color:#e8eaf0;font-family:sans-serif;padding:24px">Sin conexión. Cierra y vuelve a abrir la app.</body>',
+          { headers: { 'Content-Type': 'text/html; charset=utf-8' } }));
+    }));
     return;
   }
   // Resto: primero copia local
