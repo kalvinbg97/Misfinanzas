@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=7nuwLjgP50OC37LJ4Rfhs88dZJ2kZ4Gpgn6cLnTCufbd3D5SeFRCOSXJeiB0FtHxFxV1e24CNDeYPxH7GB-_EiS-foL4A_ueFJhXoIKz1XxTE-6s5yt9fGq8yo2uSxlYOrNXj6vCswnpY5qSetkvNfJ6pjYQ1xRagHC__0_h1CzPVulm5Aly7r3tb-DXO4aVrcy4-rzivq0x3TbT99eVWG8tLJlZR-QA--xGasFekPo" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=-tAXgtwa07IfkooUULCDshMA59MPp874XOVMQxeaSYLql3RtZZWJny4rOkPvsq5DV9BYig89Zi4c432qxtaJMpMLmXEEf54Pc5iKTnVKNazSFA1NSYtz9u648csl3oaIj_BVS579J6egZm_rfeGuvB_18MizhRqaLqypzmUnWoHrww7Rh0f7jZv69v9EJY2_M35uU_9FACJD6K63YzLSrVrRmBoBG72Pw1_l8LbOaxY" charset="UTF-8"></script><style>
   @font-face { font-family:'Syne'; font-weight:400; font-display:swap; src:url(fonts/syne-400.woff2) format('woff2'); }
   @font-face { font-family:'Syne'; font-weight:600; font-display:swap; src:url(fonts/syne-600.woff2) format('woff2'); }
   @font-face { font-family:'Syne'; font-weight:700; font-display:swap; src:url(fonts/syne-700.woff2) format('woff2'); }
@@ -714,11 +714,6 @@
       <div class="info-line" id="storage-info">—</div>
     </div>
 
-    <div class="section-title">☁️ Migración (una sola vez)</div>
-    <div class="form-card">
-      <div class="info-line">Trae tus datos desde el Google Sheet anterior. Úsalo solo una vez; luego puedes archivar el Apps Script.</div>
-      <button class="btn-secondary" onclick="importFromSheet()">Importar desde Google Sheets</button>
-    </div>
   </div>
 </main>
 
@@ -736,8 +731,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// Solo para la migración única desde el Google Sheet anterior (no se usa para guardar)
-const LEGACY_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzaUKeyGNtmpnq1TtaNoQr4l1Q3HsrP0V2SPx94Pgs31eCR3cVr-VQLsdsOZpW9YLdn_w/exec';
 const STORAGE_KEY = 'misfinanzas_v1';
 const BALANCES_KEY = 'misfinanzas_balances_v1';
 const LAST_BACKUP_KEY = 'misfinanzas_lastbackup_v1';
@@ -1588,19 +1581,6 @@ function importFile(input) {
     catch (e) { toast('❌ El archivo no es un JSON válido'); }
   };
   reader.readAsText(f);
-}
-
-async function importFromSheet() {
-  toast('Conectando con Google Sheets...');
-  try {
-    const res = await fetch(LEGACY_SHEET_URL + '?t=' + Date.now());
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    if (!data.transactions || !data.transactions.length) { toast('⚠️ El Sheet no tiene movimientos'); return; }
-    prepareImport(data, 'Google Sheets');
-  } catch (e) {
-    toast('❌ No se pudo leer el Sheet. Revisa tu conexión.');
-  }
 }
 
 // TOAST
